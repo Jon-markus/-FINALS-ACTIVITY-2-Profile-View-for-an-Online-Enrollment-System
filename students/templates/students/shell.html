@@ -1,0 +1,25 @@
+{% extends "students/base.html" %}
+{% block body %}
+<div class="frame">
+  <aside class="side">
+    <div class="brand">
+      <span class="logo">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+      </span>
+      <span>Enrollment</span>
+    </div>
+    <nav class="nav" aria-label="Main">
+      <a class="nav-item" href="{% url 'student-list' %}" aria-current="page">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        <span>Students</span>
+      </a>
+    </nav>
+    <div class="side-foot">
+      <a href="{% url 'admin:index' %}">Manage records</a>
+    </div>
+  </aside>
+  <main class="main">
+    {% block main %}{% endblock %}
+  </main>
+</div>
+{% endblock %}

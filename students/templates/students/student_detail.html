@@ -1,0 +1,226 @@
+{% extends "students/shell.html" %}
+{% block title %}{{ student.display_name }} · Enrollment{% endblock %}
+{% block main %}
+<header class="page-head">
+  <div>
+    <a class="crumb" href="{% url 'student-list' %}{% if keep %}?{{ keep }}{% endif %}">
+      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>
+      Students
+    </a>
+    <h1>{{ student.full_name }}</h1>
+    <p class="sub">{{ student.student_number }} · {{ student.program }}</p>
+  </div>
+  <a class="btn-dark" href="{% url 'admin:students_student_change' student.pk %}">Edit record</a>
+</header>
+
+<div class="content">
+  <section class="stats" aria-label="Student summary">
+    <div class="stat">
+      <span class="stat-label">Status</span>
+      <b>{{ student.get_status_display }}</b>
+      <span class="stat-note"><i class="dot {% if student.status == 'active' %}green{% else %}gray{% endif %}"></i>{% if student.status == 'active' %}Currently attending{% else %}Not currently attending{% endif %}</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Section</span>
+      <b>{{ student.section }}</b>
+      <span class="stat-note"><i class="dot blue"></i>Class section</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Attendance</span>
+      <b class="att {{ student.attendance_class }}">{{ student.attendance_rate }}%</b>
+      <span class="stat-note"><i class="dot amber"></i>Of scheduled sessions</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Enrollment</span>
+      <b>{% if student.enrollment %}{{ student.enrollment.get_status_display }}{% else %}&mdash;{% endif %}</b>
+      <span class="stat-note"><i class="dot purple"></i>{% if student.enrollment %}{{ student.enrollment.course }}{% else %}No class yet{% endif %}</span>
+    </div>
+  </section>
+
+  <section class="record">
+    <div class="tabs" role="tablist">
+      {% for key, label in tabs %}
+      <a class="tab" role="tab" href="?tab={{ key }}{% if keep %}&amp;{{ keep }}{% endif %}" aria-selected="{% if key == tab %}true{% else %}false{% endif %}">{{ label }}</a>
+      {% endfor %}
+    </div>
+
+    <div class="panel" role="tabpanel">
+
+    {% if tab == "personal" %}
+      <section>
+        <h3>Identity</h3>
+        <dl class="grid">
+          <div><dt>Last name</dt><dd>{{ student.last_name }}</dd></div>
+          <div><dt>First name</dt><dd>{{ student.first_name }}</dd></div>
+          <div><dt>Middle name</dt><dd>{{ student.middle_name|default:"—" }}</dd></div>
+          <div><dt>Student number</dt><dd>{{ student.student_number }}</dd></div>
+          <div><dt>Sex</dt><dd>{{ student.sex }}</dd></div>
+          <div><dt>Date of birth</dt><dd>{{ student.date_of_birth|date:"F j, Y" }}</dd></div>
+          <div><dt>Age</dt><dd>{{ student.age }} years old</dd></div>
+          <div><dt>Place of birth</dt><dd>{{ student.place_of_birth|default:"—" }}</dd></div>
+        </dl>
+      </section>
+      <section>
+        <h3>Other details</h3>
+        <dl class="grid">
+          <div><dt>Nationality</dt><dd>{{ student.nationality|default:"—" }}</dd></div>
+          <div><dt>Religion</dt><dd>{{ student.religion|default:"—" }}</dd></div>
+          <div><dt>Mother tongue</dt><dd>{{ student.mother_tongue|default:"—" }}</dd></div>
+          <div><dt>Siblings</dt><dd>{{ student.siblings }}</dd></div>
+        </dl>
+      </section>
+
+    {% elif tab == "contact" %}
+      <section>
+        <h3>Student</h3>
+        <dl class="grid">
+          <div><dt>Mobile number</dt><dd>{{ student.phone|default:"—" }}</dd></div>
+          <div><dt>Email</dt><dd>{{ student.email|default:"—" }}</dd></div>
+        </dl>
+      </section>
+      <section>
+        <h3>Home address</h3>
+        <dl class="grid">
+          <div><dt>Address</dt><dd>{{ student.address|default:"—" }}</dd></div>
+        </dl>
+      </section>
+      <section>
+        <h3>Emergency contact</h3>
+        {% if family.emergency %}
+        <dl class="grid">
+          <div><dt>Name</dt><dd>{{ family.emergency.name }}</dd></div>
+          <div><dt>Relationship</dt><dd>{{ family.emergency.relation_label|default:"—" }}</dd></div>
+          <div><dt>Mobile number</dt><dd>{{ family.emergency.phone|default:"—" }}</dd></div>
+        </dl>
+        {% else %}<p class="muted">No emergency contact on file.</p>{% endif %}
+      </section>
+
+    {% elif tab == "background" %}
+      <section>
+        <h3>Father</h3>
+        {% if family.father %}
+        <dl class="grid">
+          <div><dt>Name</dt><dd>{{ family.father.name }}</dd></div>
+          <div><dt>Occupation</dt><dd>{{ family.father.occupation|default:"—" }}</dd></div>
+          <div><dt>Contact</dt><dd>{{ family.father.phone|default:"—" }}</dd></div>
+        </dl>
+        {% else %}<p class="muted">Not on file.</p>{% endif %}
+      </section>
+      <section>
+        <h3>Mother</h3>
+        {% if family.mother %}
+        <dl class="grid">
+          <div><dt>Name</dt><dd>{{ family.mother.name }}</dd></div>
+          <div><dt>Occupation</dt><dd>{{ family.mother.occupation|default:"—" }}</dd></div>
+          <div><dt>Contact</dt><dd>{{ family.mother.phone|default:"—" }}</dd></div>
+        </dl>
+        {% else %}<p class="muted">Not on file.</p>{% endif %}
+      </section>
+      <section>
+        <h3>Legal guardian</h3>
+        {% if family.guardian %}
+        <dl class="grid">
+          <div><dt>Name</dt><dd>{{ family.guardian.name }}</dd></div>
+          <div><dt>Relationship</dt><dd>{{ family.guardian.relation_label|default:"—" }}</dd></div>
+          <div><dt>Contact</dt><dd>{{ family.guardian.phone|default:"—" }}</dd></div>
+        </dl>
+        {% else %}<p class="muted">Not on file.</p>{% endif %}
+      </section>
+
+    {% elif tab == "academic" %}
+      <section>
+        <h3>Current placement</h3>
+        <dl class="grid">
+          <div><dt>Program</dt><dd>{{ student.program }}</dd></div>
+          <div><dt>Section</dt><dd>{{ student.section }}</dd></div>
+          <div><dt>Attendance</dt><dd>{{ student.attendance_rate }}%</dd></div>
+        </dl>
+      </section>
+      <section>
+        <h3>Previous school</h3>
+        {% if student.previous_school %}
+        <dl class="grid">
+          <div><dt>School</dt><dd>{{ student.previous_school.school_name }}</dd></div>
+          <div><dt>School year</dt><dd>{{ student.previous_school.school_year }}</dd></div>
+          <div><dt>Last grade completed</dt><dd>{{ student.previous_school.grade_completed }}</dd></div>
+          <div><dt>General average</dt><dd>{{ student.previous_school.general_average }}</dd></div>
+          <div><dt>Honors</dt><dd>{{ student.previous_school.honors|default:"None" }}</dd></div>
+        </dl>
+        {% else %}<p class="muted">No previous school on file.</p>{% endif %}
+      </section>
+      <section>
+        <h3>Final grades{% if student.previous_school %}, {{ student.previous_school.grade_completed }}{% endif %}</h3>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Subject</th><th class="num">Grade</th><th>Remarks</th></tr></thead>
+            <tbody>
+              {% for g in grades %}
+              <tr><td>{{ g.subject }}</td><td class="num">{{ g.grade }}</td><td>{% if g.passed %}Passed{% else %}Failed{% endif %}</td></tr>
+              {% empty %}
+              <tr><td colspan="3" class="muted">No grades recorded.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    {% elif tab == "enrollment" %}
+      {% with e=student.enrollment %}
+      {% if e %}
+      <section>
+        <h3>Enrollment</h3>
+        <dl class="grid">
+          <div><dt>Status</dt><dd><span class="pill {{ e.status_class }}">{{ e.get_status_display }}</span></dd></div>
+          <div><dt>Student type</dt><dd>{{ e.get_student_type_display }}</dd></div>
+          <div><dt>Class</dt><dd>{{ e.course }}</dd></div>
+          <div><dt>Term</dt><dd>{{ e.course.term }}</dd></div>
+          <div><dt>Date enrolled</dt><dd>{{ e.date_enrolled|date:"F j, Y" }}</dd></div>
+          <div><dt>Instructor</dt><dd>{{ e.course.instructor|default:"—" }}</dd></div>
+        </dl>
+      </section>
+      <section>
+        <h3>Assessment of fees</h3>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Item</th><th class="num">Amount</th></tr></thead>
+            <tbody>
+              <tr><td>Tuition</td><td class="num">₱{{ e.tuition|floatformat:"2g" }}</td></tr>
+              <tr><td>Miscellaneous</td><td class="num">₱{{ e.misc_fees|floatformat:"2g" }}</td></tr>
+              <tr><td>Books and ID</td><td class="num">₱{{ e.books_fees|floatformat:"2g" }}</td></tr>
+              <tr><td><b>Total</b></td><td class="num"><b>₱{{ e.total_fees|floatformat:"2g" }}</b></td></tr>
+              <tr><td>Paid ({{ e.get_payment_plan_display }})</td><td class="num">₱{{ e.amount_paid|floatformat:"2g" }}</td></tr>
+              <tr><td><b>Balance</b></td><td class="num"><b>₱{{ e.balance|floatformat:"2g" }}</b></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      {% else %}
+      <p class="muted">This student has no enrollment record yet.</p>
+      {% endif %}
+      {% endwith %}
+
+    {% else %}
+      <section>
+        <h3>Requirements checklist</h3>
+        <ul class="docs">
+          {% for r in requirements %}
+          <li>
+            <span>{{ r.name }}</span>
+            <span class="pill {% if r.is_submitted %}ok{% else %}bad{% endif %}">{% if r.is_submitted %}Submitted{% else %}Missing{% endif %}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        <p class="foot">
+          {% if missing_count %}{{ missing_count }} of {{ requirements|length }} requirements still missing.{% else %}All requirements submitted.{% endif %}
+        </p>
+      </section>
+      <section>
+        <h3>Registrar notes</h3>
+        <div class="note">{{ student.notes|default:"No notes." }}</div>
+      </section>
+    {% endif %}
+
+    </div>
+  </section>
+</div>
+{% endblock %}

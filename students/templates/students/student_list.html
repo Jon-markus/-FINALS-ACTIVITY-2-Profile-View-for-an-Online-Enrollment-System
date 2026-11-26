@@ -1,0 +1,111 @@
+{% extends "students/shell.html" %}
+{% block title %}Students · Enrollment{% endblock %}
+{% block main %}
+<header class="page-head">
+  <div>
+    <h1>Students</h1>
+    <p class="sub">Manage and review every enrollee in {% if course %}{{ course }}{% else %}this class{% endif %}.</p>
+  </div>
+  <a class="btn-dark" href="{% url 'admin:students_student_add' %}">
+    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+    Add student
+  </a>
+</header>
+
+<div class="content">
+  <section class="stats" aria-label="Class summary">
+    <div class="stat">
+      <span class="stat-label">Total students</span>
+      <b>{{ stats.total }}</b>
+      <span class="stat-note"><i class="dot blue"></i>Enrolled in this class</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Active</span>
+      <b>{{ stats.active }}</b>
+      <span class="stat-note"><i class="dot green"></i>Currently attending</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Programs</span>
+      <b>{{ stats.programs }}</b>
+      <span class="stat-note"><i class="dot purple"></i>Across all year levels</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Average attendance</span>
+      <b>{% if stats.attendance is not None %}{{ stats.attendance }}%{% else %}&mdash;{% endif %}</b>
+      <span class="stat-note"><i class="dot amber"></i>100% means no absences</span>
+    </div>
+  </section>
+
+  <section>
+    <div class="list-head">
+      <h2>Class list <span class="badge">{{ students|length }}</span></h2>
+
+      <form class="toolbar" method="get" action="{% url 'student-list' %}">
+        {% if courses|length > 1 %}
+        <select name="course" class="select" aria-label="Class" onchange="this.form.submit()">
+          {% for c in courses %}
+          <option value="{{ c.pk }}"{% if course and c.pk == course.pk %} selected{% endif %}>{{ c }}</option>
+          {% endfor %}
+        </select>
+        {% endif %}
+        {% if status != "all" %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
+        {% if view == "list" %}<input type="hidden" name="view" value="list">{% endif %}
+        <label class="search">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input type="search" name="q" value="{{ q }}" placeholder="Search students" aria-label="Search students">
+        </label>
+      </form>
+
+      <nav class="seg" aria-label="Filter by status">
+        {% for t in status_tabs %}
+        <a href="{{ t.href }}"{% if t.active %} aria-current="true"{% endif %}>{{ t.label }}</a>
+        {% endfor %}
+      </nav>
+
+      <nav class="seg seg-icons" aria-label="Layout">
+        <a href="{{ grid_href }}" aria-label="Grid view"{% if view == "grid" %} aria-current="true"{% endif %}>
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        </a>
+        <a href="{{ list_href }}" aria-label="List view"{% if view == "list" %} aria-current="true"{% endif %}>
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        </a>
+      </nav>
+    </div>
+
+    <div class="cards{% if view == 'list' %} is-list{% endif %}">
+      {% for s in students %}
+      <a class="card" href="{% url 'student-detail' s.pk %}{% if keep %}?{{ keep }}{% endif %}">
+        <div class="c-person">
+          <span class="avatar tone-{{ s.avatar_tone }}" aria-hidden="true">{{ s.initials }}</span>
+          <div class="who">
+            <strong>{{ s.display_name }}</strong>
+            <small>{{ s.student_number }}</small>
+          </div>
+        </div>
+        <div class="c-status">
+          <span class="label">Status</span>
+          <span class="pill {% if s.status == 'active' %}ok{% else %}mute{% endif %}"><i class="dot"></i>{{ s.get_status_display }}</span>
+        </div>
+        <div class="c-program">
+          <span class="label">Program</span>
+          <span class="val">{{ s.program }}</span>
+        </div>
+        <div class="c-section">
+          <span class="label">Section</span>
+          <span class="val">{{ s.section }}</span>
+        </div>
+        <div class="c-att">
+          <span class="label">Attendance</span>
+          <b class="att {{ s.attendance_class }}">{{ s.attendance_rate }}%</b>
+        </div>
+        <span class="c-chev" aria-hidden="true">
+          <svg class="ico" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+        </span>
+      </a>
+      {% empty %}
+      <div class="empty">No students match your search.</div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}
